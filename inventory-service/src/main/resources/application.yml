@@ -1,0 +1,92 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: inventory-service
+  datasource:
+    url: ${INVENTORY_SERVICE_DATASOURCE_URL:jdbc:postgresql://localhost:5432/inventory_db}
+    username: ${INVENTORY_SERVICE_DATASOURCE_USERNAME:inventory_user}
+    password: ${INVENTORY_SERVICE_DATASOURCE_PASSWORD:inventory_pass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:20}
+      minimum-idle: ${HIKARI_MIN_IDLE:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:validate}
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/inventory_events}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+outbox:
+  enabled: true
+  poll-interval-ms: ${OUTBOX_POLL_INTERVAL:2000}
+  batch-size: ${OUTBOX_BATCH_SIZE:100}
+  max-in-flight: ${OUTBOX_MAX_IN_FLIGHT:200}
+  max-retries: ${OUTBOX_MAX_RETRIES:10}
+  base-retry-delay-ms: ${OUTBOX_BASE_RETRY_DELAY_MS:1000}
+
+resilience4j:
+  ratelimiter:
+    instances:
+      readApi:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+      writeApi:
+        limit-for-period: 30
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+  circuitbreaker:
+    instances:
+      websocket:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      mongoEventStore:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+  retry:
+    instances:
+      stockUpdate:
+        max-attempts: 3
+        wait-duration: 100ms
+        retry-exceptions:
+          - org.springframework.dao.OptimisticLockingFailureException
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true
+    mongo:
+      enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

@@ -1,0 +1,67 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: reporting-service
+  datasource:
+    url: ${REPORTING_SERVICE_DATASOURCE_URL:jdbc:postgresql://localhost:5432/inventory_db}
+    username: ${REPORTING_SERVICE_DATASOURCE_USERNAME:inventory_user}
+    password: ${REPORTING_SERVICE_DATASOURCE_PASSWORD:inventory_pass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:20}
+      minimum-idle: ${HIKARI_MIN_IDLE:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  flyway:
+    enabled: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:validate}
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/inventory_events}
+
+resilience4j:
+  ratelimiter:
+    instances:
+      readApi:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+  circuitbreaker:
+    instances:
+      websocket:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true
+    mongo:
+      enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

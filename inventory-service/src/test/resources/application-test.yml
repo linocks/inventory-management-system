@@ -1,0 +1,34 @@
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  main:
+    banner-mode: "off"
+  kafka:
+    listener:
+      missing-topics-fatal: false
+
+server:
+  shutdown: immediate
+
+kafka:
+  listener:
+    concurrency: 1
+
+logging:
+  level:
+    org.springframework.context.support.DefaultLifecycleProcessor: WARN
+    org.springframework.web.SimpLogging: WARN
+    org.apache.kafka.clients.producer.KafkaProducer: WARN
+    org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean: WARN
+    org.apache.kafka.clients.NetworkClient: ERROR
+    org.apache.kafka.clients.consumer.internals.ConsumerCoordinator: WARN
+    org.apache.kafka.clients.consumer.internals.LegacyKafkaConsumer: WARN
+    org.apache.kafka.clients.consumer.internals.ConsumerRebalanceListenerInvoker: WARN
+    org.apache.kafka.common.metrics.Metrics: WARN
+    org.apache.kafka.common.utils.AppInfoParser: WARN
+    org.springframework.kafka.listener.KafkaMessageListenerContainer: WARN
+    org.springframework.boot.web.embedded.tomcat.GracefulShutdown: WARN
+    org.springframework.messaging.simp.broker.SimpleBrokerMessageHandler: WARN
+    com.zaxxer.hikari.HikariDataSource: WARN
+    org.mongodb.driver.cluster: ERROR
+    org.mongodb.driver.connection: ERROR

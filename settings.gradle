@@ -1,0 +1,6 @@
+rootProject.name = 'inventory-management'
+
+include 'common'
+include 'product-service'
+include 'inventory-service'
+include 'reporting-service'
